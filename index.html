@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTC-8">
+    <link rel="stylesheet" href="normalize.css" />
     <link rel="stylesheet" href="style.css" />
     <title>Trivia Game</title>
 </head>
@@ -10,12 +11,14 @@
 <body>
     <h1>Front End Development Trivia Game</h1>
     <div id="game">
+        <div id="startscreen"></div>
         <div id="gameheader">
             <button type="button" name="highscores">View high scores</button>
             <h2 id="timer"></h2>
         </div>
         <div id="gamecontent"></div>
-    </div>
+        <div id="gameend">Game over, enter your initials to see your score!</div>
+        <div id="scoresscreen">Scores Screen</div>
 
     <script src="script.js"></script>
 </body>
