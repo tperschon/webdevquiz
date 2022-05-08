@@ -15,26 +15,29 @@ function generateQuestion(inputQuestion, answer1, answer2, answer3, answer4, inp
         solution: inputSolution,
         multiple: false
     }
-    // questions default only have one answer
+    // questions default only have one answer, this doesn't get used for this quiz but saving for potential future use via textbox multi-choice
     isMultipleAnswers ? questionAndAnswers.multiple = true : false;
+    // return object containing question, all answers, and true answer (inputSolution)
     return questionAndAnswers;
 }
 
-// object containing all our questions
+// array containing all our question objects
 var allQuestions = [
-    generateQuestion("Testing the first question!", "Q1A1", "Q1A2", "Q1A3", "Q1A4", "Q1S", false),
-    generateQuestion("Testing the second question!", "Q2A1", "Q2A2", "Q2A3", "Q2A4", "Q2S", false),
-    generateQuestion("Testing the third question!", "Q3A1", "Q3A2", "Q3A3", "Q3A4", "Q3S", false),
-    generateQuestion("Testing the fourth question!", "Q4A1", "Q4A2", "Q4A3", "Q4A4", "Q4S", false),
-    generateQuestion("Testing the fifth question!", "Q5A1", "Q5A2", "Q5A3", "Q5A4", "Q5S", false),
-    generateQuestion("Testing the sixth question!", "Q6A1", "Q6A2", "Q6A3", "Q6A4", "Q6S", false),
-    generateQuestion("Testing the seventh question!", "Q7A1", "Q7A2", "Q7A3", "Q7A4", "Q7S", false),
-    generateQuestion("Testing the eighth question!", "Q8A1", "Q8A2", "Q8A3", "Q8A4", "Q8S", false),
-    generateQuestion("Testing the ninth question!", "Q9A1", "Q9A2", "Q9A3", "Q9A4", "Q9S", false),
-    generateQuestion("Testing the tenth question!", "Q10A1", "Q10A2", "Q10A3", "Q10A4", "Q10S", false)
+    generateQuestion("What does 'CSS' stand for?", "Custom Style Sheets", "Cascading Style Sheets", "Computer Software Sheets", "Cascading Software Styles", "Cascading Style Sheets", false),
+    generateQuestion("What programming language is natively supported by almost all internet browsers?", "Java", "Python", "Ruby", "JavaScript", "JavaScript", false),
+    generateQuestion("HTML stands for what?", "HyperText Markup Language", "HyperText MDN Language", "Harvard Technical Masters Login", "HTML Tautological Makeup Learning", "HyperText Markup Language", false),
+    generateQuestion("How many types of primitive types exist in JavaScript?", "4", "5", "6", "7", "7", false),
+    generateQuestion("Which one of the following is NOT a primitive type in JavaScript?", "string", "NaN", "undefined", "bigint", "NaN", false),
+    generateQuestion("Using the 'typeof' operator, what will 'NaN' return as?", "NaN", "number", "undefined", "null", "number", false),
+    generateQuestion("Which array method would we use to add a new element to the end of an array?", ".push()", ".pop()", ".shift()", ".unshift()", ".push()", false),
+    generateQuestion("If the 'cancel' button is pressed by the user on a prompt(), what is returned?", "An empty string", "null", "undefined", "false", "null", false),
+    generateQuestion("What is the name of the '=' operator?", "assignment", "equals", "equivalent", "strictly equals", "assignment", false),
+    generateQuestion("Which operator increments a variable by 1?", "+=", "--", "-=", "++", "++", false)
 ]
 
-var gameContentDiv = document.getElementById("gamecontent");
+// get our question and answers areas to work with
+var questionDiv = document.getElementById("question");
+var answersDiv = document.getElementById("answers")
 
 // function to input question information from 
 // Set up our timer(h2) element and size the font
@@ -48,8 +51,8 @@ timerElement.textContent = "Time: " + remainingTime;
 // Set up an h3 to hold the question being asked to user
 var askedQuestion = document.createElement("h3");
 askedQuestion.textContent = "Question Goes Here";
-askedQuestion.setAttribute("style", "font-size: 4rem;");
-gameContentDiv.append(askedQuestion);
+askedQuestion.setAttribute("style", "font-size: 4rem; text-align: center;");
+questionDiv.append(askedQuestion);
 
 // Set up our buttons for answers
 var answerButtons = [];
@@ -58,9 +61,8 @@ for(i = 0; i < 4; i++) {
     madeButton.textContent = "Button: " + (i + 1);
     madeButton.setAttribute("style", "display: block;");
     answerButtons.push(madeButton);
-    gameContentDiv.append(answerButtons[i]);
+    answersDiv.appendChild(answerButtons[i]);
 }
-console.log(answerButtons[0]);
 
 
 
@@ -89,12 +91,45 @@ setTimer = function() {
 //    gameEndDiv.setAttribute("style", "display: revert;");
 //});
 questionIndex = 0;
-answerButtons[questionIndex].addEventListener("click", function(){
+
+// go to next question
+function nextQuestion() {
+    setUpQuestion();
+    // when end of question is reached, end the game
+    if(questionIndex === allQuestions.length) {
+        endGame();
+    }
+}
+
+// set up questions and answers to questions
+function setUpQuestion() {
+    // set up next question
+    askedQuestion.textContent = allQuestions[questionIndex].question;
+    // set up answers to next question
     for(i = 0; i < 4; i++) {
         answerButtons[i].textContent = allQuestions[questionIndex].answers[i];
     }
-    askedQuestion.textContent = allQuestions[questionIndex].question;
+    // increment so question # is tracked between function calls
     questionIndex++;
-    if(questionIndex === allQuestions.length) questionIndex = 0;
+}
+
+
+function endGame() {
+    // reset questionIndex for future plays
+    questionIndex = 0;
+}
+
+// check if question was correct or not before moving on to next question
+function answerQuestion(eventtarget) {
+    console.log(eventtarget.textContent);
+    console.log(allQuestions[questionIndex - 1].solution);
+    nextQuestion();
+}
+
+
+answersDiv.addEventListener("click", function(event) {
+    answerQuestion(event.target);
 });
-console.log(true ? false : true)
+setUpQuestion();
+
+123123

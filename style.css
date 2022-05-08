@@ -1,31 +1,63 @@
-* {
+* { /* get rid of lots of auto margins and paddings, size font for easy rem scaling */
     margin: 0;
     padding: 0;
     font-size: 62.5%;
     text-align: center;
 }
 
+/* color palette */
+:root {
+    --background: rgb(71, 71, 71);
+    --bodybackground: rgb(48, 48, 48);
+    --highscores: rgb(55, 114, 161);
+    --outline: rgb(49, 16, 49);
+    --textcolor: rgb(165, 160, 148);
+    --question: rgb(95, 22, 22);
+}
+
+/* html setup */
+html {
+    background-color: var(--background);
+    height: 100%;
+    margin-top: 0;
+    padding: 0 5%;
+    color: var(--textcolor);
+}
+
+/* explicitly align body to center */
 body {
     text-align: center;
+    height: 100%;   
 }
 
+/* formats h1 */
 h1 {
     font-size: 5rem;
+    margin-top: 0;
+    padding-top: 2.5%;
+    background-color: var(--bodybackground);
+    border-radius: 0 0 10px 10px;
 }
 
+/* flex columns with wrap for children */
 #game {
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
     font-size: 3rem;
-    height: 65vh;
+    align-items: center;
 }
 
+/* button text will be clear from button edge */
 button {
     padding: 5px;
     margin: 5px;
+    background-color: var(--highscores);
+    border: 2px solid var(--outline);
+    color: var(--outline);
 }
 
+/* header up between 'pages', give it some spacing from body edge and space content between so high scores and timer are on opposite sides */
 #gameheader {
     display: flex;
     flex-wrap: wrap;
@@ -34,13 +66,52 @@ button {
     margin-right: 5%;
     width: 80%;
     align-items: center;
+    background-color: var(--bodybackground);
+    padding: 5px;
+    border-radius: 10px;
 }
+
 
 #gamecontent {
     width: 65%;
     align-self: center;
+    background-color: var(--bodybackground);
+    padding: 5px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+/* starting off not showing, we exploit this property to "page" through with javascript */
+#gameend, #scoresscreen {
+    display: none;
+}
+/* minimum width so small answers don't have tiny buttons */
+#answers button {
+    min-width: 150px;
+    font-size: 2.5rem;
+    margin: 25px;
+    border: none;
+    border-radius: 10px;
+    background-color: var(--background);
+    color: var(--textcolor);
+    font-family: 'Courier New', Courier, monospace;
+}
+/* center our questions, make them have a min height so our answers don't move around */
+#question {
+    display: flex;
+    justify-content: center;
+    min-height: 150px;
+    align-items: center;
 }
 
-#gameend, #scoresscreen {
+/* separator border and text displaying if answer was correct or not */
+#answered {
+    width: 100%;
+    border-top: 2px solid var(--outline);
+    padding-top: 3px;
+    padding-bottom: 3px;
+    font-size: 3.5rem;
+    color: var(--textcolor);
+    opacity: .5;
+    min-height: 41px;
     display: none;
 }
