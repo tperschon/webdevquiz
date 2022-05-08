@@ -92,14 +92,6 @@ setTimer = function() {
 //});
 questionIndex = 0;
 
-// go to next question
-function nextQuestion() {
-    setUpQuestion();
-    // when end of question is reached, end the game
-    if(questionIndex === allQuestions.length) {
-        endGame();
-    }
-}
 
 // set up questions and answers to questions
 function setUpQuestion() {
@@ -111,25 +103,10 @@ function setUpQuestion() {
     }
     // increment so question # is tracked between function calls
     questionIndex++;
-}
-
-
-function endGame() {
-    // reset questionIndex for future plays
-    questionIndex = 0;
-}
-
-// check if question was correct or not before moving on to next question
-function answerQuestion(eventtarget) {
-    console.log(eventtarget.textContent);
-    console.log(allQuestions[questionIndex - 1].solution);
-    nextQuestion();
+    if (questionIndex === 9) questionIndex = 0;
 }
 
 
 answersDiv.addEventListener("click", function(event) {
-    answerQuestion(event.target);
+    setUpQuestion();
 });
-setUpQuestion();
-
-123123
