@@ -90,23 +90,42 @@ setTimer = function() {
 //    gameContentDiv.setAttribute("style", "display: none;");
 //    gameEndDiv.setAttribute("style", "display: revert;");
 //});
+
+// which question to start on as well as used to increment questions
 questionIndex = 0;
 
-
-// set up questions and answers to questions
-function setUpQuestion() {
-    // set up next question
-    askedQuestion.textContent = allQuestions[questionIndex].question;
-    // set up answers to next question
-    for(i = 0; i < 4; i++) {
-        answerButtons[i].textContent = allQuestions[questionIndex].answers[i];
+//
+function setUpQuestions(qIndex) {
+    // initialize a randomized ordering of 0, 1, 2 and 3 to use as index, to randomly order answers
+    var randomizer = randomizeString("0123");
+    for(i = 0;i < 4; i++)
+    {
+        answerButtons[i].textContent = allQuestions[qIndex].answers[randomizer[i]];
     }
-    // increment so question # is tracked between function calls
-    questionIndex++;
-    if (questionIndex === 9) questionIndex = 0;
+    askedQuestion.textContent = allQuestions[qIndex].question;
 }
 
-
 answersDiv.addEventListener("click", function(event) {
-    setUpQuestion();
-});123
+    if(event.target.textContent === allQuestions[questionIndex].solution) console.log("True")
+    questionIndex++;
+    if(questionIndex === 10) {
+        questionIndex = 0;
+        //endQuiz();
+    }
+    setUpQuestions(questionIndex);
+    // increment so question # is tracked between function calls
+});
+setUpQuestions(questionIndex);
+
+// takes in a string and spits out a string with the same characters in a random order
+function randomizeString(string) {
+    // declare the string parameter as an array so we can use .split() and .splice()
+    var array = string.split("");
+    // string we will return, declare empty so we can use += operator
+    var outString = [];
+    // iterate through the length of the string (not the array) and splice out array elements using random # based on array's length
+    for(i = 0; i < string.length; i++){
+        outString += array.splice(Math.floor(Math.random() * array.length), 1)
+    }
+    return outString;
+}
