@@ -109,4 +109,4 @@ function setUpQuestion() {
 
 answersDiv.addEventListener("click", function(event) {
     setUpQuestion();
-});
+});123
