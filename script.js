@@ -38,6 +38,9 @@ var answeredDiv = document.getElementById("answered");
 var initialsInput = document.getElementById("initials");
 var initialsButton = document.getElementById("initialbutton");
 
+// get our start button
+var startButton = document.getElementById("startbutton");
+
 // get spans to insert quiz parameters to display to user
 var questionNumberSpan = document.getElementById("questionnumber");
 var timerTimeSpan = document.getElementById("timertime");
@@ -84,14 +87,15 @@ for(i = 0; i < 4; i++) {
 
 // function for setting timer
 function setTimer() {
+    timerElement.setAttribute("style", "display: revert; font-size: 3rem;")
     var timerInterval = setInterval(function() {
+        remainingTime --;
         timerElement.textContent = "Time: " + remainingTime;
         if(remainingTime < 0) { 
             timerElement.textContent = "Time's up!";
             clearInterval(timerInterval);
         }
         console.log(remainingTime);
-        remainingTime --;
     }, 1000)
 }
 
@@ -147,8 +151,16 @@ function incorrect() {
     // end quiz if penalty causes time to go to 0 or below, else update timer with penalty instantly
     if(remainingTime <= 0) {
         timerElement.textContent = "Time's up!";
-        // endQuiz()
+        endQuiz()
     } else timerElement.textContent = "Time: " + remainingTime;
+}
+
+// function to start quiz
+function startQuiz() {
+    setTimer();
+    startScreenDiv.setAttribute("style", "display: none;");
+    questionDiv.setAttribute("style", "display: flex;");
+    answersDiv.setAttribute("style", "display: revert;")
 }
 
 // function run when quiz should end, by time, penalty or user finishes all questions
@@ -180,6 +192,14 @@ answersDiv.addEventListener("click", function(event) {
         // set up the next question
         setUpQuestions(questionIndex);
     }
+});
+
+// start quiz when start button pressed
+startButton.addEventListener("click", startQuiz);
+
+// submit initials to leaderboard when submit button pressed
+initialsButton.addEventListener("click", function() {
+
 });
 
 // calculate score via number correct and time left
