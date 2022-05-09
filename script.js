@@ -1,12 +1,3 @@
-/*  There are several properties and methods we will need to use
-    We need to assign document elements to variables using the .getElementById() method in document
-    We need to use the .checked attribute of checkboxes to validate user input
-    We need to use the .onclick event of buttons to validate user input
-    A clicked button without a checked checkbox should prompt user they must select an answer
-    Multiple answers must not be selectable unless applicable to question: 
-    Checking a box on its own must not change timer or points until input fully validated with button
-*/
-
 // function to create an object that stores all of our information about a question
 function generateQuestion(inputQuestion, answer1, answer2, answer3, answer4, inputSolution, isMultipleAnswers) { 
     var questionAndAnswers = {
@@ -33,20 +24,44 @@ var allQuestions = [
     generateQuestion("If the 'cancel' button is pressed by the user on a prompt(), what is returned?", "An empty string", "null", "undefined", "false", "null", false),
     generateQuestion("What is the name of the '=' operator?", "assignment", "equals", "equivalent", "strictly equals", "assignment", false),
     generateQuestion("Which operator increments a variable by 1?", "+=", "--", "-=", "++", "++", false)
-]
+];
 
-// get our question and answers areas to work with
+// get divs to work with, used with display properties to hide and show to page through quiz
+var startScreenDiv = document.getElementById("startscreen");
 var questionDiv = document.getElementById("question");
-var answersDiv = document.getElementById("answers")
+var answersDiv = document.getElementById("answers");
+var gameEndDiv = document.getElementById("gameend");
+var scoresScreenDiv = document.getElementById("scoresscreen");
+var answeredDiv = document.getElementById("answered");
 
-// function to input question information from 
+// get our input field and submit button
+var initialsInput = document.getElementById("initials");
+var initialsButton = document.getElementById("initialbutton");
+
+// get spans to insert quiz parameters to display to user
+var questionNumberSpan = document.getElementById("questionnumber");
+var timerTimeSpan = document.getElementById("timertime");
+var penaltyAmountSpan = document.getElementById("penalty");
+
 // Set up our timer(h2) element and size the font
 var timerElement = document.getElementById("timer");
-timerElement.setAttribute("style", "font-size: 3rem;")
+timerElement.setAttribute("style", "font-size: 3rem;");
 
-// Set up actual time that's being tracked and insert it into our timer
-var remainingTime = 10;
+// Set up actual time that's being tracked and insert it into our timer and start screen
+var remainingTime = 75;
 timerElement.textContent = "Time: " + remainingTime;
+timerTimeSpan.textContent = ` ${remainingTime} `;
+timerTimeSpan.setAttribute("style", "font-size: 3rem; color: var(--highlight);")
+
+// Set up and penalty amount for incorrect answers and insert it into start screen
+var penaltyAmount = 10;
+penaltyAmountSpan.textContent = ` ${penaltyAmount} `;
+penaltyAmountSpan.setAttribute("style", "font-size: 3rem; color: var(--highlight);")
+
+// insert number of questions into start screen
+questionNumberSpan.textContent = ` ${allQuestions.length} `;
+questionNumberSpan.setAttribute("style", "font-size: 3rem; color: var(--highlight);")
+
 
 // Set up an h3 to hold the question being asked to user
 var askedQuestion = document.createElement("h3");
@@ -64,15 +79,11 @@ for(i = 0; i < 4; i++) {
     answersDiv.appendChild(answerButtons[i]);
 }
 
-
-
-
-var gameEndDiv = document.getElementById("gameend");
 /*<input type="checkbox" id="cb1" value="Yes?">
 <label for="cb1">Testing</label><br>*/
 
 // function for setting timer
-setTimer = function() {
+function setTimer() {
     var timerInterval = setInterval(function() {
         timerElement.textContent = "Time: " + remainingTime;
         if(remainingTime < 0) { 
@@ -93,29 +104,88 @@ setTimer = function() {
 
 // which question to start on as well as used to increment questions
 questionIndex = 0;
+correctlyAnswered = 0;
 
-//
+// sets up a question and its answers based on the given integer
 function setUpQuestions(qIndex) {
     // initialize a randomized ordering of 0, 1, 2 and 3 to use as index, to randomly order answers
     var randomizer = randomizeString("0123");
+    // set up the current question in the askedQuestion text
+    askedQuestion.textContent = allQuestions[qIndex].question;
+    // four total button, go through each and give them text pertinent to the current question
     for(i = 0;i < 4; i++)
     {
         answerButtons[i].textContent = allQuestions[qIndex].answers[randomizer[i]];
     }
-    askedQuestion.textContent = allQuestions[qIndex].question;
+}
+
+// check if clicked button is the correct answer to the current question
+function checkAnswer(clickedButton) {
+    if(clickedButton.textContent === allQuestions[questionIndex].solution){
+        correct();
+    } else {
+        incorrect();
+    }
+}
+
+// function to run if user answered correctly
+function correct() {
+    // increment number of correctly answered questions
+    correctlyAnswered++;
+    // show and change text of answereDiv
+    answeredDiv.setAttribute("style", "display: revert;");
+    answeredDiv.textContent = "Correct!";
+}
+
+// function to run if user answered incorrectly
+function incorrect() {
+    // show and change text of answeredDiv
+    answeredDiv.setAttribute("style", "display: revert;");
+    answeredDiv.textContent = "Incorrect!";
+    // remove time from timer as penalty
+    remainingTime -= penaltyAmount;
+    // end quiz if penalty causes time to go to 0 or below, else update timer with penalty instantly
+    if(remainingTime <= 0) {
+        timerElement.textContent = "Time's up!";
+        // endQuiz()
+    } else timerElement.textContent = "Time: " + remainingTime;
+}
+
+// function run when quiz should end, by time, penalty or user finishes all questions
+function endQuiz() {
+    // hide our answeredDiv after 3.5 seconds
+    setTimeout(hideAnswered, 3500);
+    questionDiv.setAttribute("style", "display: none");
+    answersDiv.setAttribute("style", "display: none");
+    gameEndDiv.setAttribute("style", "display: revert")
+}
+
+// hides answeredDiv
+function hideAnswered() {
+    answeredDiv.setAttribute("style", "display: none;");
 }
 
 answersDiv.addEventListener("click", function(event) {
-    if(event.target.textContent === allQuestions[questionIndex].solution) console.log("True")
-    questionIndex++;
-    if(questionIndex === 10) {
-        questionIndex = 0;
-        //endQuiz();
+    // only run if an answer button is actually clicked
+    if(event.target.tagName !== "DIV") {
+        // function to check if user answered correctly
+        checkAnswer(event.target)
+        // increment so question # is tracked between function calls
+        questionIndex++;
+        // reset and end quiz if last question answered
+        if(questionIndex === 10) {
+            endQuiz();
+            questionIndex = 0;
+        }
+        // set up the next question
+        setUpQuestions(questionIndex);
     }
-    setUpQuestions(questionIndex);
-    // increment so question # is tracked between function calls
 });
-setUpQuestions(questionIndex);
+
+// calculate score via number correct and time left
+function calculateScore(correct, timeLeft) {
+    return (timeLeft * correct * correct) + timeLeft;
+}
 
 // takes in a string and spits out a string with the same characters in a random order
 function randomizeString(string) {
@@ -127,5 +197,8 @@ function randomizeString(string) {
     for(i = 0; i < string.length; i++){
         outString += array.splice(Math.floor(Math.random() * array.length), 1)
     }
+    // output randomized string
     return outString;
 }
+
+setUpQuestions(questionIndex);
