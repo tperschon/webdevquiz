@@ -26,9 +26,10 @@ var allQuestions = [
     generateQuestion("Which operator increments a variable by 1?", "+=", "--", "-=", "++", "++", false)
 ];
 
-// set which question to start on as well as used to increment questions
-questionIndex = 5;
-correctlyAnswered = 0;
+// define variables for index of questions, number of correct answers, score
+var questionIndex = 0;
+var correctlyAnswered = 0;
+var currentScore;
 
 // get divs to work with, used with display properties to hide and show to page through quiz
 var startScreenDiv = document.getElementById("startscreen");
@@ -55,7 +56,8 @@ var timerElement = document.getElementById("timer");
 timerElement.setAttribute("style", "font-size: 3rem;");
 
 // Set up actual time that's being tracked and insert it into our timer and start screen
-var remainingTime = 75;
+var quizTime = 75; // change to change quiz time
+var remainingTime = quizTime; // used for logic while preserving quizTime
 timerElement.textContent = "Time: " + remainingTime;
 timerTimeSpan.textContent = ` ${remainingTime} `;
 timerTimeSpan.setAttribute("style", "font-size: 3rem; color: var(--highlight);")
@@ -75,6 +77,7 @@ var highscores = [];
 var storedHighscores = JSON.parse(localStorage.getItem("highscores"));
 var scoresList = document.getElementById("scores");
 if(storedHighscores !== null) highscores = storedHighscores;
+highscores = ["Test1", "Test2", "Test3", "123: 750"]
 
 // Set up an h3 to hold the question being asked to user
 var askedQuestion = document.createElement("h3");
@@ -92,17 +95,26 @@ for (i = 0; i < 4; i++) {
     answersDiv.appendChild(answerButtons[i]);
 }
 
+// global scope variable for use with setInterval/clearInterval
+var timerInterval;
 // function for setting timer
 function setTimer() {
+    // set up the timer on the screen
     timerElement.setAttribute("style", "display: revert; font-size: 3rem;")
-    var timerInterval = setInterval(function () {
+    // interval function to actually count down timer
+    timerInterval = setInterval(function () {
         remainingTime--;
         timerElement.textContent = "Time: " + remainingTime;
+        // end quiz if countdown reaches 0;
         if (remainingTime < 0) {
-            timerElement.textContent = "Time's up!";
-            clearInterval(timerInterval);
+            endQuiz();
         }
     }, 1000)
+}
+
+// stop the timer
+function stopTimer() {
+    clearInterval(timerInterval);
 }
 
 // sets up a question and its answers based on the given integer
@@ -144,7 +156,6 @@ function incorrect() {
     remainingTime -= penaltyAmount;
     // end quiz if penalty causes time to go to 0 or below, else update timer with penalty instantly
     if (remainingTime <= 0) {
-        timerElement.textContent = "Time's up!";
         endQuiz()
     } else timerElement.textContent = "Time: " + remainingTime;
 }
@@ -161,6 +172,12 @@ function startQuiz() {
 function endQuiz() {
     // hide our answeredDiv after 3.5 seconds
     setTimeout(hideAnswered, 3500);
+    currentScore = calculateScore(correctlyAnswered, remainingTime);
+    if(remainingTime < 1) timerElement.textContent = "Time's up!";
+    else timerElement.textContent = "Finished!";
+    stopTimer();
+    remainingTime = quizTime;
+    
     questionDiv.setAttribute("style", "display: none");
     answersDiv.setAttribute("style", "display: none");
     gameEndDiv.setAttribute("style", "display: revert")
@@ -192,23 +209,35 @@ answersDiv.addEventListener("click", function (event) {
 startButton.addEventListener("click", startQuiz);
 
 // submit initials to leaderboard when submit button pressed
-initialsButton.addEventListener("click", function () {
+initialsButton.addEventListener("click", addScore);
+
+// prevent user from using invalid keys on entering highscore
+initialsInput.addEventListener("keydown", function(event) {
+    // array with accepted characters and commands
+    var acceptedChars = ["abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", "Backspace", "Delete", "ArrowLeft", "ArrowUp", "ArrowDown", "ArrowRight"];
+    // if key isn't alphanumeric or okayed command, preventDefault so nothing happens (special characters not entered, can't refresh page, etc.)
+    if(!acceptedChars[0].includes(event.key) && !acceptedChars.includes(event.key)) event.preventDefault();
+})
+
+// function to add a score to the scoreboard
+function addScore() {
+    // hide game over screen, show scores screen
     gameEndDiv.setAttribute("style", "display: none;");
-    scoresScreenDiv.setAttribute("style", "display: revert;")
-    var initialsscore = initialsInput.value + ": " + calculateScore(correctlyAnswered, remainingTime);
+    scoresScreenDiv.setAttribute("style", "display: revert; position: absolute; top: 10px; left: 0; right: 0; margin: 0 auto; border-radius: 10px;")
+    var initialsscore = initialsInput.value.toUpperCase() + ": " + calculateScore(correctlyAnswered, remainingTime);
     highscores.push(initialsscore);
     var score = document.createElement("li");
     score.textContent = initialsscore;
     score.setAttribute("style", "font-size: 2.5rem; background-color: var(--outline); margin: 0; list-style: none; color: var(--highscores); max-width: 300px; align-self: center;")
     scoresList.append(score);
-});
+}
 // set up high scores leaderboard from highscores array
 function setHighScores() {
     if (highscores !== null) {
         for (i = 0; i < highscores.length; i++) {
             var score = document.createElement("li");
             score.textContent = highscores[i];
-            score.setAttribute("style", "font-size: 2.5rem; background-color: var(--outline); margin: 0; list-style: none; color: var(--highscores); max-width: 300px; align-self: center;")
+            score.setAttribute("style", "font-size: 2.5rem; background-color: var(--outline); margin: 5px; list-style: none; color: var(--highscores); max-width: 300px; align-self: center;")
             scoresList.append(score);
         }
     }
@@ -216,7 +245,8 @@ function setHighScores() {
 
 // calculate score via number correct and time left
 function calculateScore(correct, timeLeft) {
-    return (timeLeft * correct * correct) + timeLeft;
+    if(timeLeft < 1) return (1 * correct * correct); // non-zero, non-negative score
+    else return (timeLeft * correct * correct) + timeLeft;
 }
 
 // takes in a string and spits out a string with the same characters in a random order

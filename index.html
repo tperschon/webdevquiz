@@ -17,7 +17,8 @@
         </div>
         <div id="gamecontent">
             <div id="startscreen">
-                You will be presented with a<span id="questionnumber"></span>question quiz related to front-end web development.<br>
+                You will be presented with a<span id="questionnumber"></span>question quiz related to front-end web
+                development.<br>
                 There will be a<span id="timertime"></span>second timer.<br>
                 You will be penalized<span id="penalty"></span>seconds for every incorrect answer given.<br>
                 <button type="button" name="startbutton" id="startbutton">Start Quiz</button>
@@ -27,7 +28,7 @@
             <div id="gameend">
                 <h3>Game over!</h3>
                 <label for="initials">Enter your initials to see your score:</label><br>
-                <input type="text" name="initials" id="initials" maxlength="3"/>
+                <input type="text" name="initials" id="initials" maxlength="3" />
                 <button type="submit" value="Submit" id="initialbutton">Submit</button>
             </div>
             <div id="scoresscreen">
@@ -35,10 +36,15 @@
                 <ul id="scores"></ul>
                 <button type="button" name="close" id="close">Close</button>
             </div>
+            <div id="endscreen">
+                Would you like to play again?<br>
+                <button type="button" id="restart">Restart</button>
+                <button type="button" id="end">End</button>
+            </div>
             <div id="answered"></div>
         </div>
 
-    <script src="script.js"></script>
+        <script src="script.js"></script>
 </body>
 
 
