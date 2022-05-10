@@ -1,5 +1,5 @@
 // function to create an object that stores all of our information about a question
-function generateQuestion(inputQuestion, answer1, answer2, answer3, answer4, inputSolution, isMultipleAnswers) { 
+function generateQuestion(inputQuestion, answer1, answer2, answer3, answer4, inputSolution, isMultipleAnswers) {
     var questionAndAnswers = {
         question: inputQuestion,
         answers: [answer1, answer2, answer3, answer4],
@@ -25,6 +25,10 @@ var allQuestions = [
     generateQuestion("What is the name of the '=' operator?", "assignment", "equals", "equivalent", "strictly equals", "assignment", false),
     generateQuestion("Which operator increments a variable by 1?", "+=", "--", "-=", "++", "++", false)
 ];
+
+// set which question to start on as well as used to increment questions
+questionIndex = 5;
+correctlyAnswered = 0;
 
 // get divs to work with, used with display properties to hide and show to page through quiz
 var startScreenDiv = document.getElementById("startscreen");
@@ -62,9 +66,15 @@ penaltyAmountSpan.textContent = ` ${penaltyAmount} `;
 penaltyAmountSpan.setAttribute("style", "font-size: 3rem; color: var(--highlight);")
 
 // insert number of questions into start screen
-questionNumberSpan.textContent = ` ${allQuestions.length} `;
+questionNumberSpan.textContent = ` ${(allQuestions.length - questionIndex)} `;
 questionNumberSpan.setAttribute("style", "font-size: 3rem; color: var(--highlight);")
 
+// retrieve high scores array from localstorage, set up scores ul
+// using an initial blank array and if statement so we can always use .append() even if no stored scores
+var highscores = [];
+var storedHighscores = JSON.parse(localStorage.getItem("highscores"));
+var scoresList = document.getElementById("scores");
+if(storedHighscores !== null) highscores = storedHighscores;
 
 // Set up an h3 to hold the question being asked to user
 var askedQuestion = document.createElement("h3");
@@ -74,7 +84,7 @@ questionDiv.append(askedQuestion);
 
 // Set up our buttons for answers
 var answerButtons = [];
-for(i = 0; i < 4; i++) {    
+for (i = 0; i < 4; i++) {
     var madeButton = document.createElement("button");
     madeButton.textContent = "Button: " + (i + 1);
     madeButton.setAttribute("style", "display: block;");
@@ -82,33 +92,18 @@ for(i = 0; i < 4; i++) {
     answersDiv.appendChild(answerButtons[i]);
 }
 
-/*<input type="checkbox" id="cb1" value="Yes?">
-<label for="cb1">Testing</label><br>*/
-
 // function for setting timer
 function setTimer() {
     timerElement.setAttribute("style", "display: revert; font-size: 3rem;")
-    var timerInterval = setInterval(function() {
-        remainingTime --;
+    var timerInterval = setInterval(function () {
+        remainingTime--;
         timerElement.textContent = "Time: " + remainingTime;
-        if(remainingTime < 0) { 
+        if (remainingTime < 0) {
             timerElement.textContent = "Time's up!";
             clearInterval(timerInterval);
         }
-        console.log(remainingTime);
     }, 1000)
 }
-
-// Change referenced button object
-// Hide gameContentDiv and show gameEndDiv
-//answerButtons[0].addEventListener("click", function() { 
-//    gameContentDiv.setAttribute("style", "display: none;");
-//    gameEndDiv.setAttribute("style", "display: revert;");
-//});
-
-// which question to start on as well as used to increment questions
-questionIndex = 0;
-correctlyAnswered = 0;
 
 // sets up a question and its answers based on the given integer
 function setUpQuestions(qIndex) {
@@ -117,15 +112,14 @@ function setUpQuestions(qIndex) {
     // set up the current question in the askedQuestion text
     askedQuestion.textContent = allQuestions[qIndex].question;
     // four total button, go through each and give them text pertinent to the current question
-    for(i = 0;i < 4; i++)
-    {
+    for (i = 0; i < 4; i++) {
         answerButtons[i].textContent = allQuestions[qIndex].answers[randomizer[i]];
     }
 }
 
 // check if clicked button is the correct answer to the current question
 function checkAnswer(clickedButton) {
-    if(clickedButton.textContent === allQuestions[questionIndex].solution){
+    if (clickedButton.textContent === allQuestions[questionIndex].solution) {
         correct();
     } else {
         incorrect();
@@ -149,7 +143,7 @@ function incorrect() {
     // remove time from timer as penalty
     remainingTime -= penaltyAmount;
     // end quiz if penalty causes time to go to 0 or below, else update timer with penalty instantly
-    if(remainingTime <= 0) {
+    if (remainingTime <= 0) {
         timerElement.textContent = "Time's up!";
         endQuiz()
     } else timerElement.textContent = "Time: " + remainingTime;
@@ -177,15 +171,15 @@ function hideAnswered() {
     answeredDiv.setAttribute("style", "display: none;");
 }
 
-answersDiv.addEventListener("click", function(event) {
+answersDiv.addEventListener("click", function (event) {
     // only run if an answer button is actually clicked
-    if(event.target.tagName !== "DIV") {
+    if (event.target.tagName !== "DIV") {
         // function to check if user answered correctly
         checkAnswer(event.target)
         // increment so question # is tracked between function calls
         questionIndex++;
         // reset and end quiz if last question answered
-        if(questionIndex === 10) {
+        if (questionIndex === 10) {
             endQuiz();
             questionIndex = 0;
         }
@@ -198,9 +192,27 @@ answersDiv.addEventListener("click", function(event) {
 startButton.addEventListener("click", startQuiz);
 
 // submit initials to leaderboard when submit button pressed
-initialsButton.addEventListener("click", function() {
-
+initialsButton.addEventListener("click", function () {
+    gameEndDiv.setAttribute("style", "display: none;");
+    scoresScreenDiv.setAttribute("style", "display: revert;")
+    var initialsscore = initialsInput.value + ": " + calculateScore(correctlyAnswered, remainingTime);
+    highscores.push(initialsscore);
+    var score = document.createElement("li");
+    score.textContent = initialsscore;
+    score.setAttribute("style", "font-size: 2.5rem; background-color: var(--outline); margin: 0; list-style: none; color: var(--highscores); max-width: 300px; align-self: center;")
+    scoresList.append(score);
 });
+// set up high scores leaderboard from highscores array
+function setHighScores() {
+    if (highscores !== null) {
+        for (i = 0; i < highscores.length; i++) {
+            var score = document.createElement("li");
+            score.textContent = highscores[i];
+            score.setAttribute("style", "font-size: 2.5rem; background-color: var(--outline); margin: 0; list-style: none; color: var(--highscores); max-width: 300px; align-self: center;")
+            scoresList.append(score);
+        }
+    }
+}
 
 // calculate score via number correct and time left
 function calculateScore(correct, timeLeft) {
@@ -214,11 +226,12 @@ function randomizeString(string) {
     // string we will return, declare empty so we can use += operator
     var outString = [];
     // iterate through the length of the string (not the array) and splice out array elements using random # based on array's length
-    for(i = 0; i < string.length; i++){
+    for (i = 0; i < string.length; i++) {
         outString += array.splice(Math.floor(Math.random() * array.length), 1)
     }
     // output randomized string
     return outString;
 }
 
+setHighScores();
 setUpQuestions(questionIndex);

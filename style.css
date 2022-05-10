@@ -25,6 +25,19 @@ html {
     color: var(--textcolor);
 }
 
+ul{
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    flex-wrap: wrap;
+    width: 150px;
+    margin: 0 auto;
+}
+
+li {
+    width: 100%;
+}
+
 /* explicitly align body to center */
 body {
     text-align: center;
@@ -135,7 +148,7 @@ button:hover {
     width: 100px;
 }
 
-#startscreen {
+#startscreen, #scoresscreen {
     font-size: 3rem;
     font-weight: 700;
 }

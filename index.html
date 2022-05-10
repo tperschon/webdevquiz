@@ -12,7 +12,7 @@
     <h1>Front End Development Trivia Game</h1>
     <div id="game">
         <div id="gameheader">
-            <button type="button" name="highscores">View High Scores</button>
+            <button type="button" name="highscores" id="highscores">View High Scores</button>
             <h2 id="timer"></h2>
         </div>
         <div id="gamecontent">
@@ -30,7 +30,11 @@
                 <input type="text" name="initials" id="initials" maxlength="3"/>
                 <button type="submit" value="Submit" id="initialbutton">Submit</button>
             </div>
-            <div id="scoresscreen">Scores Screen</div>
+            <div id="scoresscreen">
+                High Scores
+                <ul id="scores"></ul>
+                <button type="button" name="close" id="close">Close</button>
+            </div>
             <div id="answered"></div>
         </div>
 
