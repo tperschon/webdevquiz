@@ -217,11 +217,48 @@ startButton.addEventListener("click", startQuiz);
 
 // submit initials to leaderboard when submit button pressed
 initialsButton.addEventListener("click", function() {
-    addScore(calculateScore(correctlyAnswered, remainingTime));
+    var newScore = createScore(initialsInput.value, calculateScore(correctlyAnswered, remainingTime));
     showScoreboard();
     endscreenDiv.setAttribute("style", "display: revert;")
     gameEndDiv.setAttribute("style", "display: none;");
+    scoresScreenDiv.appendChild(newScore);
 });
+
+// creates a li with spans for initials and score
+function createScore(initialABC, number) {
+    var newLi = document.createElement("li");
+    newLi.dataset.initials = initialABC.toUpperCase();
+    newLi.dataset.score = number;
+    newLi.setAttribute("style", "background-color: var(--highscores); margin: 3px auto; list-style: none; width: 150px; color: var(--outline); display: flex; justify-content: space-between;")
+    var newInitials = document.createElement("span");
+    newInitials.textContent = newLi.dataset.initials;
+    newInitials.setAttribute("style", "padding: 0 3px; font-size: 2.5rem;")
+    newLi.appendChild(newInitials);
+    var newScore = document.createElement("span");
+    newScore.textContent = newLi.dataset.score;
+    newScore.setAttribute("style", "padding: 0 3px; font-size: 2.5rem;")
+    newLi.appendChild(newScore);
+    return newLi;
+}
+
+function storeScore(initialABC, number) {
+    var scoreObj = {
+        initials: initialABC,
+        score: number
+    }
+    highscores.push(scoreObj);
+}
+highscores = [{initials: "abc", score: 555}, {initials: "def", score: 666}]
+function setLeaderboard() {
+    for (i = 0; i < highscores.length; i++) {
+        var tempScore = createScore(highscores[i].initials, highscores[i].score)
+        scoresScreenDiv.appendChild(tempScore);
+    }
+}
+storeScore("TES", 555);
+storeScore("TIN", 666);
+console.log(highscores);
+setLeaderboard();
 
 // close scoresscreen if close button pressed
 closeButton.addEventListener("click", hideScoreboard);
@@ -242,34 +279,10 @@ initialsInput.addEventListener("keydown", function(event) {
 function showScoreboard() {
     scoresScreenDiv.setAttribute("style", "display: revert; position: absolute; top: 10px; left: 0; right: 0; margin: 0 auto; border-radius: 10px;");
 }
-
 function hideScoreboard() {
     scoresScreenDiv.setAttribute("style", "display: none;")
 }
 
-// function to create score li
-function createScore(score) {
-    var scoreLi = document.createElement("li");
-    scoreLi.setAttribute("data-initials", initialsInput.value.toUpperCase());
-    scoreLi.setAttribute("data-score", score);
-    scoreLi.textContent = scoreLi.dataset.initials + ": " + scoreLi.dataset.score;
-    scoreLi.setAttribute("style","font-size: 2.5rem; background-color: var(--outline); margin: 0; list-style: none; color: var(--highscores); max-width: 300px; align-self: center;");
-}
-
-// function to add a score to the scoreboard
-function addScore(score) {
-    // hide game over screen, show scores screenscoresList.append(scoreLi);
-    highscores.push(scoreLi);
-    localStorage.setItem("highscores", JSON.stringify(highscores));
-}
-// set up high scores leaderboard from highscores array
-function setHighScores() {
-    if (highscores !== null) {
-        for (i = 0; i < highscores.length; i++) {
-            addScore(highscores[i]);
-        }
-    }
-}
 
 // calculate score via number correct and time left
 function calculateScore(correct, timeLeft) {
@@ -290,5 +303,4 @@ function randomizeString(string) {
     // output randomized string
     return outString;
 }
-console.log(highscores);
 setUpQuestions(questionIndex);
