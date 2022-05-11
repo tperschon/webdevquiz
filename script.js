@@ -26,6 +26,12 @@ var allQuestions = [
     generateQuestion("Which operator increments a variable by 1?", "+=", "--", "-=", "++", "++", false)
 ];
 
+// setup close button for highscores screen, restart and quit buttons for end screen, plus endscreenDiv
+var closeButton = document.getElementById("close");
+var restartButton = document.getElementById("restart");
+var endButton = document.getElementById("end");
+var endscreenDiv = document.getElementById("endscreen");
+
 // define variables for index of questions, number of correct answers, score
 var questionIndex = 0;
 var correctlyAnswered = 0;
@@ -77,7 +83,6 @@ var highscores = [];
 var storedHighscores = JSON.parse(localStorage.getItem("highscores"));
 var scoresList = document.getElementById("scores");
 if(storedHighscores !== null) highscores = storedHighscores;
-highscores = ["Test1", "Test2", "Test3", "123: 750"]
 
 // Set up an h3 to hold the question being asked to user
 var askedQuestion = document.createElement("h3");
@@ -163,6 +168,8 @@ function incorrect() {
 // function to start quiz
 function startQuiz() {
     setTimer();
+    correctlyAnswered = 0;
+    remainingTime = quizTime;
     startScreenDiv.setAttribute("style", "display: none;");
     questionDiv.setAttribute("style", "display: flex;");
     answersDiv.setAttribute("style", "display: revert;")
@@ -209,7 +216,20 @@ answersDiv.addEventListener("click", function (event) {
 startButton.addEventListener("click", startQuiz);
 
 // submit initials to leaderboard when submit button pressed
-initialsButton.addEventListener("click", addScore);
+initialsButton.addEventListener("click", function() {
+    addScore(calculateScore(correctlyAnswered, remainingTime));
+    showScoreboard();
+    endscreenDiv.setAttribute("style", "display: revert;")
+    gameEndDiv.setAttribute("style", "display: none;");
+});
+
+// close scoresscreen if close button pressed
+closeButton.addEventListener("click", hideScoreboard);
+
+restartButton.addEventListener("click", function() {
+    endscreenDiv.setAttribute("style", "display: none;");
+    startScreenDiv.setAttribute("style", "dispaly: revert;")
+});
 
 // prevent user from using invalid keys on entering highscore
 initialsInput.addEventListener("keydown", function(event) {
@@ -219,26 +239,34 @@ initialsInput.addEventListener("keydown", function(event) {
     if(!acceptedChars[0].includes(event.key) && !acceptedChars.includes(event.key)) event.preventDefault();
 })
 
+function showScoreboard() {
+    scoresScreenDiv.setAttribute("style", "display: revert; position: absolute; top: 10px; left: 0; right: 0; margin: 0 auto; border-radius: 10px;");
+}
+
+function hideScoreboard() {
+    scoresScreenDiv.setAttribute("style", "display: none;")
+}
+
+// function to create score li
+function createScore(score) {
+    var scoreLi = document.createElement("li");
+    scoreLi.setAttribute("data-initials", initialsInput.value.toUpperCase());
+    scoreLi.setAttribute("data-score", score);
+    scoreLi.textContent = scoreLi.dataset.initials + ": " + scoreLi.dataset.score;
+    scoreLi.setAttribute("style","font-size: 2.5rem; background-color: var(--outline); margin: 0; list-style: none; color: var(--highscores); max-width: 300px; align-self: center;");
+}
+
 // function to add a score to the scoreboard
-function addScore() {
-    // hide game over screen, show scores screen
-    gameEndDiv.setAttribute("style", "display: none;");
-    scoresScreenDiv.setAttribute("style", "display: revert; position: absolute; top: 10px; left: 0; right: 0; margin: 0 auto; border-radius: 10px;")
-    var initialsscore = initialsInput.value.toUpperCase() + ": " + calculateScore(correctlyAnswered, remainingTime);
-    highscores.push(initialsscore);
-    var score = document.createElement("li");
-    score.textContent = initialsscore;
-    score.setAttribute("style", "font-size: 2.5rem; background-color: var(--outline); margin: 0; list-style: none; color: var(--highscores); max-width: 300px; align-self: center;")
-    scoresList.append(score);
+function addScore(score) {
+    // hide game over screen, show scores screenscoresList.append(scoreLi);
+    highscores.push(scoreLi);
+    localStorage.setItem("highscores", JSON.stringify(highscores));
 }
 // set up high scores leaderboard from highscores array
 function setHighScores() {
     if (highscores !== null) {
         for (i = 0; i < highscores.length; i++) {
-            var score = document.createElement("li");
-            score.textContent = highscores[i];
-            score.setAttribute("style", "font-size: 2.5rem; background-color: var(--outline); margin: 5px; list-style: none; color: var(--highscores); max-width: 300px; align-self: center;")
-            scoresList.append(score);
+            addScore(highscores[i]);
         }
     }
 }
@@ -262,6 +290,5 @@ function randomizeString(string) {
     // output randomized string
     return outString;
 }
-
-setHighScores();
+console.log(highscores);
 setUpQuestions(questionIndex);
