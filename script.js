@@ -192,6 +192,7 @@ function startQuiz() {
 
 // function run when quiz should end, by time, penalty or user finishes all questions
 function endQuiz() {
+    calculateScore(correctlyAnswered, remainingTime);
     // hide our answeredDiv after 3.5 seconds
     setTimeout(hideAnswered, 3500);
     if (remainingTime < 1) timerElement.textContent = "Time's up!";
@@ -257,7 +258,7 @@ function addScore(event) {
     }
     else {
         // store our score info
-        storeScore(initialsInput.value, calculateScore(correctlyAnswered, remainingTime));
+        storeScore(initialsInput.value, currentScore);
         // clear the scores out from the leaderboard so we can repopulate it and our new score is sorted in appropriately
         clearScores();
         // sort the scores so when they populate they're in descending point order
@@ -350,8 +351,8 @@ function hideScoreboard() {
 
 // calculate score via number correct and time left
 function calculateScore(correct, timeLeft) {
-    if (timeLeft < 1) return (1 * correct * correct); // non-zero, non-negative score
-    else return (timeLeft * correct * correct) + timeLeft;
+    if (timeLeft < 1) currentScore = (1 * correct * correct); // non-zero, non-negative score
+    else currentScore = (timeLeft * correct * correct) + timeLeft;
 }
 
 // takes in a string and spits out a string with the same characters in a random order
