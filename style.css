@@ -156,6 +156,9 @@ button:hover {
 }
 /* 2 z-index so it hovers above stuff, js makes it absolute and some other stuff */
 #scoresscreen {
+    position: absolute;
+    align-self: center;
+    top: 0px;
     z-index: 2;
     background-color: var(--bodybackground);
     border: 1px solid orange;

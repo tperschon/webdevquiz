@@ -214,7 +214,8 @@ answersDiv.addEventListener("click", function (event) {
     }
 });
 
-// event listener/function
+// event listener/function to open/close score screen with view high scores button
+highscoresButton.addEventListener("click", toggleScoreboard)
 
 // start quiz when start button pressed
 startButton.addEventListener("click", startQuiz);
@@ -228,6 +229,7 @@ initialsButton.addEventListener("click", function () {
     gameEndDiv.setAttribute("style", "display: none;");
     scoresScreenDiv.appendChild(newScore);
     timerElement.setAttribute("style", "display: none;")
+    scoresScreenDiv.dataset.state = "visible";
 });
 
 // creates a li with spans for initials and score
@@ -281,11 +283,21 @@ initialsInput.addEventListener("keydown", function (event) {
     if (!acceptedChars[0].includes(event.key) && !acceptedChars.includes(event.key)) event.preventDefault();
 });
 
+function toggleScoreboard() {
+    if (scoresScreenDiv.dataset.state === "visible") {
+        hideScoreboard();
+    } else {
+        showScoreboard();
+    }
+}
+
 function showScoreboard() {
     scoresScreenDiv.setAttribute("style", "display: revert; position: absolute; top: 10px; left: 0; right: 0; margin: 0 auto; border-radius: 10px;");
+    scoresScreenDiv.dataset.state = "visible";
 }
 function hideScoreboard() {
     scoresScreenDiv.setAttribute("style", "display: none;")
+    scoresScreenDiv.dataset.state = "hidden";
 }
 
 
@@ -310,3 +322,34 @@ function randomizeString(string) {
 }
 setUpQuestions(questionIndex);
 setLeaderboard();
+scoresScreenDiv.dataset.state = "hidden";
+scoresScreenDiv.sort()
+// uses the sort method's callback function to sort the objects within array in ascending order based on their .score property, then reverse that order to create a descending based on scores
+function sortScores(objectArray) {
+    objectArray.sort(function(score1, score2) {
+        if (score1.score < score2.score) return -1;
+        else if (score2.score < score1.score) return 1;
+        else return 0;
+    })
+    objectArray.reverse();
+}
+testObj1 = {
+    initials: "abc",
+    score: 1233
+}
+testObc2 = {
+    initials: "def",
+    score: 456
+}
+testObc3 = {
+    initials: "abd",
+    score: 2314
+}
+testObc4 = {
+    initials: "asf",
+    score: 544
+}
+testObc5 = {
+    initials: "eff",
+    score: 999
+}
