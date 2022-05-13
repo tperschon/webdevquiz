@@ -110,8 +110,6 @@ askedQuestion.textContent = "Question Goes Here";
 askedQuestion.setAttribute("style", "font-size: 4rem; text-align: center;");
 questionDiv.append(askedQuestion);
 
-// Set up our buttons for answers
-
 // global scope variable for use with setInterval/clearInterval
 var timerInterval;
 // function for setting timer
@@ -196,7 +194,6 @@ function startQuiz() {
 function endQuiz() {
     // hide our answeredDiv after 3.5 seconds
     setTimeout(hideAnswered, 3500);
-    currentScore = calculateScore(correctlyAnswered, remainingTime);
     if (remainingTime < 1) timerElement.textContent = "Time's up!";
     else timerElement.textContent = "Finished!";
     stopTimer();
@@ -221,7 +218,7 @@ answersDiv.addEventListener("click", function (event) {
         // reset and end quiz if last question answered
         if (questionIndex === 10) {
             endQuiz();
-            questionIndex = 0;
+            return;
         }
         // set up the next question
         setUpQuestions(questionIndex);
