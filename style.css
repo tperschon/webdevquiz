@@ -14,6 +14,9 @@
     --textcolor: rgb(165, 160, 148);
     --question: rgb(95, 22, 22);
     --highlight: rgb(135, 206, 235);
+    --warn: rgb(177, 177, 58);
+    --danger: rgb(207, 57, 57);
+    --submit: rgb(38, 122, 38);
 }
 
 /* html setup */
@@ -177,4 +180,17 @@ button:hover {
 #restart, #end {
     width: 100px;
     font-size: 3rem;
+}
+
+#clear, #end {
+    background-color: var(--danger);
+}
+
+#startbutton, #initialbutton, #restart {
+    background-color: var(--submit);
+    position: relative;
+}
+
+#close {
+    background-color: var(--warn);
 }

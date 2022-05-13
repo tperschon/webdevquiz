@@ -26,48 +26,71 @@ var allQuestions = [
     generateQuestion("Which operator increments a variable by 1?", "+=", "--", "-=", "++", "++", false)
 ];
 
-// setup close button for highscores screen, restart and quit buttons for end screen, highscores button for top, plus endscreenDiv
-var closeButton = document.getElementById("close");
+////// setup all html objects
+//// start screen and its button plus spans
+var startScreenDiv = document.getElementById("startscreen");
+var startButton = document.getElementById("startbutton");
+// these spans are fed info about the quiz parameters
+var questionNumberSpan = document.getElementById("questionnumber");
+var timerTimeSpan = document.getElementById("timertime");
+var penaltyAmountSpan = document.getElementById("penalty");
+
+//// questionandanswers div plus child divs question/answers and their elements
+var questionAndAnswersDiv = document.getElementById("questionandanswers");
+var questionDiv = document.getElementById("question");
+var answersDiv = document.getElementById("answers");
+// variable and loop that sets up buttons on the answers div
+var answerButtons = [];
+for (i = 0; i < 4; i++) {
+    var madeButton = document.createElement("button");
+    madeButton.textContent = "Button: " + (i + 1);
+    madeButton.setAttribute("style", "display: block;");
+    answerButtons.push(madeButton);
+    answersDiv.appendChild(answerButtons[i]);
+}
+
+//// end of quiz screen and its input and button and error span
+var gameEndDiv = document.getElementById("gameend");
+var initialsInput = document.getElementById("initials");
+var initialsButton = document.getElementById("initialbutton");
+var errorSpan = document.getElementById("inputerror");
+
+//// final screen allowing users to restart or quit altogether and its buttons
+var endscreenDiv = document.getElementById("endscreen");
 var restartButton = document.getElementById("restart");
 var endButton = document.getElementById("end");
-var endscreenDiv = document.getElementById("endscreen");
-var highscoresButton = document.getElementById("highscores");
+
+//// scores screen and its own buttons
+var scoresScreenDiv = document.getElementById("scoresscreen");
+var closeButton = document.getElementById("close");
+var clearScoresButton = document.getElementById("clear");
+//// this div gets appended to entire content when user answers question then it will display: none after 3.5 seconds
+var answeredDiv = document.getElementById("answered");
+
+// using an initial blank array and if statement so we can always use .append() even if no stored scores
+var highscores = [];
+var storedHighscores = JSON.parse(localStorage.getItem("highscores"));
+var scoresList = document.getElementById("scores");
 
 // define variables for index of questions, number of correct answers, score
 var questionIndex = 0;
 var correctlyAnswered = 0;
 var currentScore;
 
-// get divs to work with, used with display properties to hide and show to page through quiz
-var startScreenDiv = document.getElementById("startscreen");
-var questionDiv = document.getElementById("question");
-var answersDiv = document.getElementById("answers");
-var gameEndDiv = document.getElementById("gameend");
-var scoresScreenDiv = document.getElementById("scoresscreen");
-var answeredDiv = document.getElementById("answered");
-
-// get our input field and submit button
-var initialsInput = document.getElementById("initials");
-var initialsButton = document.getElementById("initialbutton");
-
-// get our start button
-var startButton = document.getElementById("startbutton");
-
-// get spans to insert quiz parameters to display to user
-var questionNumberSpan = document.getElementById("questionnumber");
-var timerTimeSpan = document.getElementById("timertime");
-var penaltyAmountSpan = document.getElementById("penalty");
-
-// Set up our timer(h2) element and size the font
+// button to toggle scores screen and the quiz timer
+var highscoresButton = document.getElementById("highscores");
 var timerElement = document.getElementById("timer");
 timerElement.setAttribute("style", "font-size: 3rem;");
-
-// Set up actual time that's being tracked and insert it into our timer and start screen
 var quizTime = 75; // change to change quiz time
-var remainingTime = quizTime; // used for logic while preserving quizTime
+var remainingTime = quizTime; // used for logic while preserving quizTime's original parameters
 timerElement.textContent = "Time: " + remainingTime;
 timerTimeSpan.textContent = ` ${remainingTime} `;
-timerTimeSpan.setAttribute("style", "font-size: 3rem; color: var(--highlight);")
+timerTimeSpan.setAttribute("style", "font-size: 3rem; color: var(--highlight);");
+
+function init() {
+    setUpQuestions(questionIndex);
+    setLeaderboard();
+}
 
 // Set up and penalty amount for incorrect answers and insert it into start screen
 var penaltyAmount = 10;
@@ -79,10 +102,6 @@ questionNumberSpan.textContent = ` ${(allQuestions.length - questionIndex)} `;
 questionNumberSpan.setAttribute("style", "font-size: 3rem; color: var(--highlight);")
 
 // retrieve high scores array from localstorage, set up scores ul
-// using an initial blank array and if statement so we can always use .append() even if no stored scores
-var highscores = [];
-var storedHighscores = JSON.parse(localStorage.getItem("highscores"));
-var scoresList = document.getElementById("scores");
 if (storedHighscores !== null) highscores = storedHighscores;
 
 // Set up an h3 to hold the question being asked to user
@@ -92,14 +111,6 @@ askedQuestion.setAttribute("style", "font-size: 4rem; text-align: center;");
 questionDiv.append(askedQuestion);
 
 // Set up our buttons for answers
-var answerButtons = [];
-for (i = 0; i < 4; i++) {
-    var madeButton = document.createElement("button");
-    madeButton.textContent = "Button: " + (i + 1);
-    madeButton.setAttribute("style", "display: block;");
-    answerButtons.push(madeButton);
-    answersDiv.appendChild(answerButtons[i]);
-}
 
 // global scope variable for use with setInterval/clearInterval
 var timerInterval;
@@ -123,6 +134,7 @@ function setTimer() {
 // stop the timer
 function stopTimer() {
     clearInterval(timerInterval);
+    setTimeout(timerElement.setAttribute("style", "display: none;"), 3500);
 }
 
 // sets up a question and its answers based on the given integer
@@ -170,6 +182,8 @@ function incorrect() {
 
 // function to start quiz
 function startQuiz() {
+    questionIndex = 0;
+    setUpQuestions(questionIndex);
     setTimer();
     correctlyAnswered = 0;
     remainingTime = quizTime;
@@ -221,23 +235,53 @@ highscoresButton.addEventListener("click", toggleScoreboard)
 startButton.addEventListener("click", startQuiz);
 
 // submit initials to leaderboard when submit button pressed
-initialsButton.addEventListener("click", function () {
-    var newScore = createScore(initialsInput.value, calculateScore(correctlyAnswered, remainingTime));
-    storeScore(initialsInput.value, calculateScore(correctlyAnswered, remainingTime));
-    showScoreboard();
-    endscreenDiv.setAttribute("style", "display: revert;")
-    gameEndDiv.setAttribute("style", "display: none;");
-    scoresScreenDiv.appendChild(newScore);
-    timerElement.setAttribute("style", "display: none;")
-    scoresScreenDiv.dataset.state = "visible";
-});
+initialsButton.addEventListener("click", addScore);
+
+// variables for error message upon inputting less than 3 characters
+var onlyOneInterval = false;
+var errorSpanopacity = 1;
+function addScore(event) {
+    if (initialsInput.value.length < 3) {
+        errorSpan.textContent = "You must enter at least 3 characters."
+        errorSpan.setAttribute("style", "background-color: var(--warn); padding: 10px; z-index: 2; width: 300px; color: var(--outline); position: absolute; align-self: center;");
+        errorSpanopacity = 1;
+        if (onlyOneInterval === false) {
+            var fade = setInterval(function () {
+                onlyOneInterval = true;
+                errorSpanopacity -= .01;
+                errorSpan.style.opacity = errorSpanopacity;
+                if (errorSpanopacity <= 0) {
+                    clearInterval(fade);
+                    errorSpan.setAttribute("style", "display: none;");
+                    onlyOneInterval = false;
+                }
+            }, 20);
+        }
+    }
+    else {
+        // store our score info
+        storeScore(initialsInput.value, calculateScore(correctlyAnswered, remainingTime));
+        // clear the scores out from the leaderboard so we can repopulate it and our new score is sorted in appropriately
+        clearScores();
+        // sort the scores so when they populate they're in descending point order
+        sortScores(highscores);
+        // set up all the scores
+        setLeaderboard();
+        // show the div containing all the scores
+        showScoreboard();
+
+        endscreenDiv.setAttribute("style", "display: revert;")
+        gameEndDiv.setAttribute("style", "display: none;");
+        scoresScreenDiv.dataset.state = "visible";
+    }
+}
 
 // creates a li with spans for initials and score
 function createScore(initialABC, number) {
     var newLi = document.createElement("li");
     newLi.dataset.initials = initialABC.toUpperCase();
     newLi.dataset.score = number;
-    newLi.setAttribute("style", "background-color: var(--highscores); margin: 3px auto; list-style: none; width: 150px; color: var(--outline); display: flex; justify-content: space-between;")
+    newLi.setAttribute("style", "background-color: var(--highscores); margin: 3px auto; list-style: none; width: 150px; color: var(--outline); display: flex; justify-content: space-between; font-family: 'Courier New', Courier, monospace;")
     var newInitials = document.createElement("span");
     newInitials.textContent = newLi.dataset.initials;
     newInitials.setAttribute("style", "padding: 0 3px; font-size: 2.5rem;")
@@ -267,6 +311,12 @@ function setLeaderboard() {
     }
 }
 
+clearScoresButton.addEventListener("click", function () {
+    clearScores();
+    highscores = [];
+    localStorage.setItem("highscores", JSON.stringify(highscores));
+})
+
 // close scoresscreen if close button pressed
 closeButton.addEventListener("click", hideScoreboard);
 
@@ -290,7 +340,7 @@ function toggleScoreboard() {
         showScoreboard();
     }
 }
-
+// functions to hide and show the scoreboard, used by the highscoresButton
 function showScoreboard() {
     scoresScreenDiv.setAttribute("style", "display: revert; position: absolute; top: 10px; left: 0; right: 0; margin: 0 auto; border-radius: 10px;");
     scoresScreenDiv.dataset.state = "visible";
@@ -320,36 +370,30 @@ function randomizeString(string) {
     // output randomized string
     return outString;
 }
-setUpQuestions(questionIndex);
-setLeaderboard();
-scoresScreenDiv.dataset.state = "hidden";
-scoresScreenDiv.sort()
-// uses the sort method's callback function to sort the objects within array in ascending order based on their .score property, then reverse that order to create a descending based on scores
+// uses the sort method's callback function to sort the objects within array in ascending order based on their .score property, then reverse that order to create a descending based
 function sortScores(objectArray) {
-    objectArray.sort(function(score1, score2) {
+    objectArray.sort(function (score1, score2) {
         if (score1.score < score2.score) return -1;
         else if (score2.score < score1.score) return 1;
         else return 0;
     })
     objectArray.reverse();
 }
-testObj1 = {
-    initials: "abc",
-    score: 1233
+
+// function to clear all the scores out of the ul item, used so we can clear them out and repopulate them after they've been re-ordered
+function clearScores() {
+    var list = document.getElementsByTagName("li")
+    var listlength = list.length;
+    for (i = listlength; i > 0; i--) {
+        list[i - 1].remove();
+    }
 }
-testObc2 = {
-    initials: "def",
-    score: 456
-}
-testObc3 = {
-    initials: "abd",
-    score: 2314
-}
-testObc4 = {
-    initials: "asf",
-    score: 544
-}
-testObc5 = {
-    initials: "eff",
-    score: 999
-}
+
+// ends the whole game when user clicks the "End" button
+endButton.addEventListener("click", function() {
+    var game = document.getElementById("game");
+    game.textContent = "Thanks for taking the quiz!";
+    game.setAttribute("style", "border-radius: 10px; background-color: var(--bodybackground); font-size: 6rem;")
+})
+
+init();
