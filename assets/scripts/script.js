@@ -7,7 +7,16 @@ function init() {
 /*                  most variables              */
 //////////////////////////////////////////////////
 
-// array containing all our question objects
+////// quiz parameters
+//// time in seconds for the quiz duration
+var quizTime = 75;
+////
+var penaltyAmount = 10;
+//// array containing all our question objects
+// generateQuestion() accepts 7 parameters:
+// "The question to be asked", "An Answer", "An Answer", "An Answer", "An Answer", "The Correct Answer", "true or false"
+// Make sure the 6th parameter is an exact duplicate of one of parameters 2-5, as it acts as a key to the question
+// The 7th parameter is unused currently, but could be used if wanting to accept multiple answer as correct via a checkbox system
 var allQuestions = [
     generateQuestion("What does 'CSS' stand for?", "Custom Style Sheets", "Cascading Style Sheets", "Computer Software Sheets", "Cascading Software Styles", "Cascading Style Sheets", false),
     generateQuestion("What programming language is natively supported by almost all internet browsers?", "Java", "Python", "Ruby", "JavaScript", "JavaScript", false),
@@ -77,8 +86,7 @@ var questionIndex = 0;
 var correctlyAnswered = 0;
 var currentScore;
 
-// Set up and penalty amount for incorrect answers and insert it into our start screen
-var penaltyAmount = 10;
+// style and insert penalty amount into our start screen
 penaltyAmountSpan.textContent = ` ${penaltyAmount} `;
 penaltyAmountSpan.setAttribute("style", "font-size: 3rem; color: var(--highlight);")
 
@@ -86,8 +94,7 @@ penaltyAmountSpan.setAttribute("style", "font-size: 3rem; color: var(--highlight
 questionNumberSpan.textContent = ` ${(allQuestions.length - questionIndex)} `;
 questionNumberSpan.setAttribute("style", "font-size: 3rem; color: var(--highlight);")
 
-// variables for the quiz timer, insert quiz time into start screen
-var quizTime = 75; // change to change quiz time
+// variable for the quiz timer, insert quiz time into start screen
 var remainingTime = quizTime; // used for logic while preserving quizTime's original parameters
 timerTimeSpan.textContent = ` ${quizTime} `;
 
@@ -201,7 +208,7 @@ function endQuiz() {
     // calculate the user's score
     calculateScore(correctlyAnswered, remainingTime);
     // hide our answeredDiv after 3.5 seconds
-    setTimeout(function() {
+    setTimeout(function () {
         answeredDiv.setAttribute("style", "display: none;");
     }, 3500);
     // if user has no more time when quiz ends, tell them their time was up, otherwise tell them they finished
@@ -223,7 +230,7 @@ function answerQuestion(event) {
         // increment so question # is tracked between function calls
         questionIndex++;
         // reset and end quiz if last question answered
-        if (questionIndex === 10) {
+        if (questionIndex === allQuestions.length) {
             endQuiz();
             return;
         }
@@ -343,7 +350,7 @@ function toggleScoreboard() {
 
 // functions to hide and show the scoreboard, used by the highscoresButton
 function showScoreboard() {
-    scoresScreenDiv.setAttribute("style", "display: revert; position: absolute; top: 10px; left: 0; right: 0; margin: 0 auto; border-radius: 10px; overflow: scroll; max-height: 60vh;");
+    scoresScreenDiv.setAttribute("style", "display: revert; position: absolute; top: 10px; left: 0; right: 0; margin: 0 auto; border-radius: 10px;");
     scoresScreenDiv.dataset.state = "visible";
 }
 function hideScoreboard() {
