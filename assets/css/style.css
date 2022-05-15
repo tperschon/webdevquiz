@@ -168,7 +168,7 @@ button:hover {
     width: 400px;
 }
 /* starting off not showing, we exploit this property to "page" through with javascript */
-#gameend, #scoresscreen, #question, #answers, #timer, #endscreen {
+#gameend, #scoresscreen, #questionandanswers, #timer, #endscreen {
     display: none;
 }
 
