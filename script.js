@@ -109,7 +109,7 @@ questionDiv.append(askedQuestion);
 var timerInterval;
 
 //////////////////////////////////////////////////
-/*                  most functions              */
+/*                  named functions             */
 //////////////////////////////////////////////////
 
 // function for setting timer
@@ -341,7 +341,7 @@ function toggleScoreboard() {
     }
 }
 
-// functions to hide and show the scoreboard, used by the highscoresButton and another
+// functions to hide and show the scoreboard, used by the highscoresButton
 function showScoreboard() {
     scoresScreenDiv.setAttribute("style", "display: revert; position: absolute; top: 10px; left: 0; right: 0; margin: 0 auto; border-radius: 10px; overflow: scroll; max-height: 60vh;");
     scoresScreenDiv.dataset.state = "visible";

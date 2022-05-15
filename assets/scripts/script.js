@@ -109,7 +109,7 @@ questionDiv.append(askedQuestion);
 var timerInterval;
 
 //////////////////////////////////////////////////
-/*                  most functions              */
+/*                  named functions             */
 //////////////////////////////////////////////////
 
 // function for setting timer
@@ -459,4 +459,5 @@ answersDiv.addEventListener("click", answerQuestion);
 //////////////////////////////////////////////////
 /*                  initialization              */
 //////////////////////////////////////////////////
+
 init();
