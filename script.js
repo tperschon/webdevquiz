@@ -1,15 +1,6 @@
-// function to create an object that stores all of our information about a question
-function generateQuestion(inputQuestion, answer1, answer2, answer3, answer4, inputSolution, isMultipleAnswers) {
-    var questionAndAnswers = {
-        question: inputQuestion,
-        answers: [answer1, answer2, answer3, answer4],
-        solution: inputSolution,
-        multiple: false
-    }
-    // questions default only have one answer, this doesn't get used for this quiz but saving for potential future use via checkbox multi-choice
-    isMultipleAnswers ? questionAndAnswers.multiple = true : false;
-    // return object containing question, all answers, and true answer (inputSolution)
-    return questionAndAnswers;
+function init() {
+    setUpQuestions(questionIndex);
+    setLeaderboard();
 }
 
 // array containing all our question objects
@@ -27,6 +18,11 @@ var allQuestions = [
 ];
 
 ////// setup all html objects
+
+// button to toggle scores screen and the quiz timer
+var highscoresButton = document.getElementById("highscores");
+var timerElement = document.getElementById("timer");
+
 //// start screen and its button plus spans
 var startScreenDiv = document.getElementById("startscreen");
 var startButton = document.getElementById("startbutton");
@@ -77,31 +73,26 @@ var questionIndex = 0;
 var correctlyAnswered = 0;
 var currentScore;
 
-// button to toggle scores screen and the quiz timer
-var highscoresButton = document.getElementById("highscores");
-var timerElement = document.getElementById("timer");
-timerElement.setAttribute("style", "font-size: 3rem;");
-var quizTime = 75; // change to change quiz time
-var remainingTime = quizTime; // used for logic while preserving quizTime's original parameters
-timerElement.textContent = "Time: " + remainingTime;
-timerTimeSpan.textContent = ` ${remainingTime} `;
-timerTimeSpan.setAttribute("style", "font-size: 3rem; color: var(--highlight);");
-
-function init() {
-    setUpQuestions(questionIndex);
-    setLeaderboard();
-}
-
-// Set up and penalty amount for incorrect answers and insert it into start screen
+// Set up and penalty amount for incorrect answers and insert it into our start screen
 var penaltyAmount = 10;
 penaltyAmountSpan.textContent = ` ${penaltyAmount} `;
 penaltyAmountSpan.setAttribute("style", "font-size: 3rem; color: var(--highlight);")
 
-// insert number of questions into start screen
+// insert number of questions, via a length of the q uestion array, and insert it into our start screen
 questionNumberSpan.textContent = ` ${(allQuestions.length - questionIndex)} `;
 questionNumberSpan.setAttribute("style", "font-size: 3rem; color: var(--highlight);")
 
-// retrieve high scores array from localstorage, set up scores ul
+// variables for the quiz timer, insert quiz time into start screen
+var quizTime = 75; // change to change quiz time
+var remainingTime = quizTime; // used for logic while preserving quizTime's original parameters
+timerTimeSpan.textContent = ` ${quizTime} `;
+
+// style the quiz timer
+timerElement.setAttribute("style", "font-size: 3rem;");
+timerElement.textContent = "Time: " + remainingTime;
+timerTimeSpan.setAttribute("style", "font-size: 3rem; color: var(--highlight);");
+
+// retrieve high scores array from localstorage
 if (storedHighscores !== null) highscores = storedHighscores;
 
 // Set up an h3 to hold the question being asked to user
@@ -120,6 +111,7 @@ function setTimer() {
     timerElement.setAttribute("style", "display: revert; font-size: 3rem;")
     // interval function to actually count down timer
     timerInterval = setInterval(function () {
+        // decrement quiz timer so and update it on the page
         remainingTime--;
         timerElement.textContent = "Time: " + remainingTime;
         // end quiz if countdown reaches 0;
@@ -129,10 +121,10 @@ function setTimer() {
     }, 1000)
 }
 
-// stop the timer
+// stop the quiz timer
 function stopTimer() {
+    // stops the actual timer
     clearInterval(timerInterval);
-    setTimeout(timerElement.setAttribute("style", "display: none;"), 3500);
 }
 
 // sets up a question and its answers based on the given integer
@@ -192,9 +184,11 @@ function startQuiz() {
 
 // function run when quiz should end, by time, penalty or user finishes all questions
 function endQuiz() {
+    // calculate the user's score
     calculateScore(correctlyAnswered, remainingTime);
     // hide our answeredDiv after 3.5 seconds
     setTimeout(hideAnswered, 3500);
+    // if user has no more time when quiz ends
     if (remainingTime < 1) timerElement.textContent = "Time's up!";
     else timerElement.textContent = "Finished!";
     stopTimer();
@@ -209,11 +203,13 @@ function hideAnswered() {
     answeredDiv.setAttribute("style", "display: none;");
 }
 
-answersDiv.addEventListener("click", function (event) {
+answersDiv.addEventListener("click", answerQuestion);
+
+function answerQuestion(event) {
     // only run if an answer button is actually clicked
     if (event.target.tagName !== "DIV") {
         // function to check if user answered correctly
-        checkAnswer(event.target)
+        checkAnswer(event.target);
         // increment so question # is tracked between function calls
         questionIndex++;
         // reset and end quiz if last question answered
@@ -224,7 +220,7 @@ answersDiv.addEventListener("click", function (event) {
         // set up the next question
         setUpQuestions(questionIndex);
     }
-});
+}
 
 // event listener/function to open/close score screen with view high scores button
 highscoresButton.addEventListener("click", toggleScoreboard)
@@ -236,21 +232,33 @@ startButton.addEventListener("click", startQuiz);
 initialsButton.addEventListener("click", addScore);
 
 // variables for error message upon inputting less than 3 characters
+// I am still not 100% sure on why this works this way but it seems to require the variable to be global, relating to js being single-threaded and how intervals are processed in the stack
 var onlyOneInterval = false;
 var errorSpanopacity = 1;
-function addScore(event) {
+function addScore() {
+    // ensure user inputs a 3 letter initial for simplicity
+    // there are other solutions to this but it would require refactoring other parts of the code that rely on a 3 length initial
     if (initialsInput.value.length < 3) {
         errorSpan.textContent = "You must enter at least 3 characters."
         errorSpan.setAttribute("style", "background-color: var(--warn); padding: 10px; z-index: 2; width: 300px; color: var(--outline); position: absolute; align-self: center;");
+        // opacity gets reset to 1 on additional clicks
         errorSpanopacity = 1;
+        // only one interval so we don't we have an interval finish while another one is running and have it look weird/fade faster
         if (onlyOneInterval === false) {
+            // over the course of 2 seconds we fade out the span containing the error
             var fade = setInterval(function () {
+                // set boolean to true for purpose of comparison above
                 onlyOneInterval = true;
+                // interval is 20 ms, so 20 / .01 = 2000 ms or 2 seconds, so we fade evenly for the interval
                 errorSpanopacity -= .01;
+                // do the actual fading
                 errorSpan.style.opacity = errorSpanopacity;
                 if (errorSpanopacity <= 0) {
+                    // stop the interval once the opacity is at or lower than zero, can't be just === 0 because floating point math
                     clearInterval(fade);
+                    // completely hide the span so a user can't mouse over it and get cursor hover events
                     errorSpan.setAttribute("style", "display: none;");
+                    // now we allow intervals to again be set on this
                     onlyOneInterval = false;
                 }
             }, 20);
@@ -267,24 +275,31 @@ function addScore(event) {
         setLeaderboard();
         // show the div containing all the scores
         showScoreboard();
-
+        // revert our end screen's display so it shows up
         endscreenDiv.setAttribute("style", "display: revert;")
+        // hide our game over screen and set the data-state to visible
         gameEndDiv.setAttribute("style", "display: none;");
-        scoresScreenDiv.dataset.state = "visible";
     }
 }
 
 // creates a li with spans for initials and score
 function createScore(initialABC, number) {
+    // li where our spans will go
     var newLi = document.createElement("li");
+    // initials are set to uppercase, retro videogame style, score fed into it, li is styled. caps + monospace style fonts for retro videogame appearance
     newLi.dataset.initials = initialABC.toUpperCase();
     newLi.dataset.score = number;
     newLi.setAttribute("style", "background-color: var(--highscores); margin: 3px auto; list-style: none; width: 150px; color: var(--outline); display: flex; justify-content: space-between; font-family: 'Courier New', Courier, monospace;")
+    // span where our initials go
     var newInitials = document.createElement("span");
+    // give it the initials from the li dataset, slightly redundant but could allow sorting via initials in the future
     newInitials.textContent = newLi.dataset.initials;
+    // style and append our span to the li, initials go first so they appear on left with the li's space-between flex styling
     newInitials.setAttribute("style", "padding: 0 3px; font-size: 2.5rem;")
     newLi.appendChild(newInitials);
+    // span where our score goes
     var newScore = document.createElement("span");
+    // give it the score from the li dataset, same redundancy as initials, style and append our span to li, score goes last so it appears on right
     newScore.textContent = newLi.dataset.score;
     newScore.setAttribute("style", "padding: 0 3px; font-size: 2.5rem;")
     newLi.appendChild(newScore);
@@ -293,44 +308,30 @@ function createScore(initialABC, number) {
 
 // stores our scores in an object, itself being stored in an array, that array gets stringified for localStorage usage
 function storeScore(initialABC, number) {
+    // create an object with the initials and score
     var scoreObj = {
         initials: initialABC,
         score: number
     }
+    // push the object we just made to our highscores array
     highscores.push(scoreObj);
+    // stringify and store our updated highscores array
     localStorage.setItem("highscores", JSON.stringify(highscores));
 }
 
-// uses retrieved scores from 
+// uses retrieved scores from
 function setLeaderboard() {
+    // sort the scores before populating them
+    sortScores(highscores);
+    // loop through the length of the highscores object array and create a score li from them and append it to the scoresScreenDiv
     for (i = 0; i < highscores.length; i++) {
-        var tempScore = createScore(highscores[i].initials, highscores[i].score)
+        // could be one line but two makes it more readable to me
+        var tempScore = createScore(highscores[i].initials, highscores[i].score);
         scoresScreenDiv.appendChild(tempScore);
     }
 }
 
-clearScoresButton.addEventListener("click", function () {
-    clearScores();
-    highscores = [];
-    localStorage.setItem("highscores", JSON.stringify(highscores));
-})
-
-// close scoresscreen if close button pressed
-closeButton.addEventListener("click", hideScoreboard);
-
-restartButton.addEventListener("click", function () {
-    endscreenDiv.setAttribute("style", "display: none;");
-    startScreenDiv.setAttribute("style", "dispaly: revert;")
-});
-
-// prevent user from using invalid keys on entering highscore
-initialsInput.addEventListener("keydown", function (event) {
-    // array with accepted characters and commands
-    var acceptedChars = ["abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", "Backspace", "Delete", "ArrowLeft", "ArrowUp", "ArrowDown", "ArrowRight"];
-    // if key isn't alphanumeric or okayed command, preventDefault so nothing happens (special characters not entered, can't refresh page, etc.)
-    if (!acceptedChars[0].includes(event.key) && !acceptedChars.includes(event.key)) event.preventDefault();
-});
-
+// toggles the scoreboard based on its data-state visibility
 function toggleScoreboard() {
     if (scoresScreenDiv.dataset.state === "visible") {
         hideScoreboard();
@@ -348,10 +349,10 @@ function hideScoreboard() {
     scoresScreenDiv.dataset.state = "hidden";
 }
 
-
 // calculate score via number correct and time left
+// this scoring formula isn't necessarily supposed to be competitive or anything, it just has some weight to both correctly answered questions and time remaining
 function calculateScore(correct, timeLeft) {
-    if (timeLeft < 1) currentScore = (1 * correct * correct); // non-zero, non-negative score
+    if (timeLeft < 1) currentScore = (1 * correct * correct); // non-negative score
     else currentScore = (timeLeft * correct * correct) + timeLeft;
 }
 
@@ -378,20 +379,65 @@ function sortScores(objectArray) {
     objectArray.reverse();
 }
 
-// function to clear all the scores out of the ul item, used so we can clear them out and repopulate them after they've been re-ordered
+// function to clear all the scores out of the ul item
 function clearScores() {
-    var list = document.getElementsByTagName("li")
+    var list = document.getElementsByTagName("li");
     var listlength = list.length;
     for (i = listlength; i > 0; i--) {
         list[i - 1].remove();
     }
 }
 
+
+// function to create an object that stores all of our information about a question
+function generateQuestion(inputQuestion, answer1, answer2, answer3, answer4, inputSolution, isMultipleAnswers) {
+    var questionAndAnswers = {
+        question: inputQuestion,
+        answers: [answer1, answer2, answer3, answer4],
+        solution: inputSolution,
+        multiple: false
+    }
+    // questions default only have one answer, this doesn't get used for this quiz but saving for potential future use via checkbox multi-choice
+    isMultipleAnswers ? questionAndAnswers.multiple = true : false;
+    // return object containing question, all answers, and true answer (inputSolution)
+    return questionAndAnswers;
+}
+
+
+// anonymous function because we this functioanlity is specific to this button
+// clears scores from ul holding them and wipes out localStorage of the scores
+// it is necessary to have the localStorage wipe here in a separate function because we use clearScores() in another context where we don't want to wipe localStorage
+clearScoresButton.addEventListener("click", function () {
+    clearScores();
+    highscores = [];
+    localStorage.setItem("highscores", JSON.stringify(highscores));
+})
+
+// restart the quiz via hiding the end screen and showing the start screen
+restartButton.addEventListener("click", function () {
+    endscreenDiv.setAttribute("style", "display: none;");
+    // I found out that this doesn't need to be anything but a blank space to cause the style.css stylings to take over and make it visible again but left as-is to ensure functionality in case css or js elsewhere is changed in future
+    startScreenDiv.setAttribute("style", "display: revert;")
+    // hide the timer when a user returns to start screen
+    timerElement.setAttribute("style", "display: none;")
+});
+
+// prevent user from using invalid keys on entering highscore
+initialsInput.addEventListener("keydown", function (event) {
+    // array with accepted characters and commands
+    var acceptedChars = ["abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", "Backspace", "Delete", "ArrowLeft", "ArrowUp", "ArrowDown", "ArrowRight"];
+    // if key isn't alphanumeric or okayed command, preventDefault so nothing happens (special characters not entered, can't refresh page, etc.)
+    if (!acceptedChars[0].includes(event.key) && !acceptedChars.includes(event.key)) event.preventDefault();
+});
+
 // ends the whole game when user clicks the "End" button
-endButton.addEventListener("click", function() {
+endButton.addEventListener("click", function () {
     var game = document.getElementById("game");
     game.textContent = "Thanks for taking the quiz!";
     game.setAttribute("style", "border-radius: 10px; background-color: var(--bodybackground); font-size: 6rem;")
 })
+
+// close scoresscreen if close button pressed
+closeButton.addEventListener("click", hideScoreboard);
 
 init();
